@@ -225,7 +225,7 @@ class TutsPlusDownloader:
         return self.l_soup.find(id='lesson-breadcrumb').find('li', 'bc-title').get_text(strip=True)
     
     def isQuiz(self):
-        return self.l_soup.find('div', 'lesson-meta-wrap').find_all('a', text=re.compile('take quiz', re.IGNORECASE))
+        return bool(self.l_soup.find('div', 'lesson-meta-wrap').find_all('a', text=re.compile('take quiz', re.IGNORECASE)))
     
     def downloadCourseFile(self, url):
         filename = BasicTools.formatFilename(self.TEXT['course'])
