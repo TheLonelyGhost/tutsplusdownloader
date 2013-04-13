@@ -17,4 +17,4 @@ If an eBook link is supplied, the process is far simpler:
 1. Login using supplied credentials and verify logged-in status.
 2. Download ZIP of ebook(s) to a directory named after the ebook.
 
-**WARNING!** It is explicitly against TutsPlus terms of service to use scripts to access their website. Since this module is strictly intended for academic purposes, I am not responsible for any actions resulting from actual use of this module or any derivation of it.
+**WARNING!** It is explicitly against TutsPlus terms of service to use scripts to access their website. Since this module is strictly intended for academic purposes, The user takes all responsibility for any actions resulting from actual use of this module or any derivation of it.
