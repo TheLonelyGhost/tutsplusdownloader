@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys, string, requests, re, os, errno, codecs
+import sys, string, requests, re, os, errno, codecs, urllib, urllib2
 from bs4 import BeautifulSoup
 
 class TutsPlusDownloader:
@@ -51,8 +51,8 @@ class TutsPlusDownloader:
         self.HTML['ebook'] = self.session.get(ebook_page_url, verify=True).text
         self.e_soup = BeautifulSoup(self.HTML['ebook'])
         self.TEXT['ebook'] = self.getEbookName()
-        self.COURSE_DL_LOCATION = self.DOWNLOAD_LOCATION + '/' + self.formatFilename(self.TEXT['ebook'])
-        self.makedirs(self.COURSE_DL_LOCATION)
+        self.COURSE_DL_LOCATION = self.DOWNLOAD_LOCATION + '/' + BasicTools.formatFilename(self.TEXT['ebook'])
+        BasicTools.makedirs(self.COURSE_DL_LOCATION)
         self.broadcast('==== NEW EBOOK ====')
         self.broadcast('EBook: "' + self.TEXT['ebook'] + '"')
     
@@ -63,7 +63,7 @@ class TutsPlusDownloader:
         if url:
             self.setEbook(url)
             self.generateEbookMetaFile()
-        filename = self.formatFilename(self.TEXT['ebook'])
+        filename = BasicTools.formatFilename(self.TEXT['ebook'])
         self.broadcast('Downloading ' + filename + ' ...')
         u = self.session.get(self.getEbookLink())
         fileLocation = self.COURSE_DL_LOCATION + '/' + filename + '.zip'
@@ -109,8 +109,8 @@ class TutsPlusDownloader:
         self.TEXT['course'] = self.getCourseName()
         self.broadcast('==== NEW COURSE ====')
         self.broadcast('Course: "' + self.COURSE_TEXT + '".')
-        self.COURSE_DL_LOCATION = self.DOWNLOAD_LOCATION + '/' + self.formatFilename(self.TEXT['course'])
-        self.makedirs(self.COURSE_DL_LOCATION)
+        self.COURSE_DL_LOCATION = self.DOWNLOAD_LOCATION + '/' + BasicTools.formatFilename(self.TEXT['course'])
+        BasicTools.makedirs(self.COURSE_DL_LOCATION)
         self.table_of_contents = self.COURSE_DL_LOCATION + '/README.txt'
     
     def downloadCourse(self, course_url=''):
@@ -186,7 +186,7 @@ class TutsPlusDownloader:
         for row in self.c_soup.find(id='course-lessons').find_all('tr'):
             if 'section-footer' not in row.get('class'):
                 if row.find('a').get('href'):
-                    toc.write('      ')
+                    toc.write(' ' * 6)
                 toc.write(row.find('td', class_='section-title').get_text(strip=True) + ' ...... [' + row.find('td', class_='section-time').get_text(strip=True) + ']')
         toc.close()
         self.debug('Done')
@@ -228,7 +228,7 @@ class TutsPlusDownloader:
         return self.l_soup.find('div', 'lesson-meta-wrap').find_all('a', text=re.compile('take quiz', re.IGNORECASE))
     
     def downloadCourseFile(self, url):
-        filename = self.formatFilename(self.TEXT['course'])
+        filename = BasicTools.formatFilename(self.TEXT['course'])
         self.broadcast('Downloading ' + filename + '  ...')
         u = self.session.get(url, allow_redirects=True)
         fileLocation = self.COURSE_DL_LOCATION + '/' + filename + '.zip'
@@ -241,7 +241,7 @@ class TutsPlusDownloader:
         if self.l_soup.find(id='logged-out-lesson'):
             self.login()
         if not self.isQuiz():
-            self.makedirs(self.COURSE_DL_LOCATION + '/' + self.formatFilename(self.TEXT['section']) + '/')
+            BasicTools.makedirs(self.COURSE_DL_LOCATION + '/' + BasicTools.formatFilename(self.TEXT['section']) + '/')
             self.downloadProjectFiles()
             self.downloadVideo()
     
@@ -261,14 +261,14 @@ class TutsPlusDownloader:
     def downloadFile(self, url, fileLocation='', name_format = '', ext = ''):
         u = self.session.get(url, allow_redirects=True)
         if not name_format:
-            filename = self.formatFilename('%02d - %s' % (self.LESSON_NUM, self.TEXT['lesson']))
+            filename = BasicTools.formatFilename('%02d - %s' % (self.LESSON_NUM, self.TEXT['lesson']))
         else:
-            filename = self.formatFilename(name_format)
+            filename = BasicTools.formatFilename(name_format)
         
         self.broadcast('Downloading ' + filename + ' ...')
         
         if not fileLocation:
-            fileLocation = self.COURSE_DL_LOCATION + '/' + self.formatFilename(self.TEXT['section'])
+            fileLocation = self.COURSE_DL_LOCATION + '/' + BasicTools.formatFilename(self.TEXT['section'])
         fileLocation = fileLocation + '/' + filename
         localFile = open(fileLocation, 'wb')
         localFile.write(u.content)
@@ -294,16 +294,19 @@ class TutsPlusDownloader:
             else:
                 name = '%02d - %s' % (self.LESSON_NUM, self.TEXT['lesson'])
         return name
-    
-    def formatFilename(self, filename):
-        chars = '-_.() %s%s' % (string.ascii_letters, string.digits)
-        return ''.join(c for c in filename if c in chars)
-    
-    def makedirs(self, path):
+
+class BasicTools:
+    @staticmethod
+    def makedirs(path):
         try:
             os.makedirs(path)
-        except OSError as exc:
-            if exc.errno == errno.EEXIST and os.path.isdir(path):
+        except OSERROR as exc:
+            if ecx.errno == errno.EEXIST and os.path.isdir(path):
                 pass
             else:
                 raise
+    
+    @staticmethod
+    def formatFilename(filename):
+        chars = '-_.() %s%s' % (string.ascii_letters, string.digits)
+        return ''.join(c for c in filename if c in chars)
